@@ -83,7 +83,7 @@ export const TRANSLATE_MAX_CHAR_COUNT_PER_TIME = 5000;
  * <zh_cn>翻译时等待结果对象出现最长毫秒数</zh_cn>
  * <zh_tw>翻譯時等待結果對像出現最長毫秒數</zh_tw>
  */
-export const WAIT_ELEMENT_VISIBLE_MILLISECONDS = 40000;
+export const WAIT_ELEMENT_VISIBLE_MILLISECONDS = 4000;
 /**
  * <en_us>Google Translation URL English mark</en_us>
  * <zh_cn>谷歌翻译网址英语标记</zh_cn>
@@ -141,10 +141,10 @@ const TO_CSS = '.lRu31';
  * <zh_cn>通过谷歌翻译文本</zh_cn>
  * <zh_tw>通過谷歌翻譯文本</zh_tw>
  *
- * @param driver {WebDriver} <en_us>Browser driver</en_us><zh_cn>浏览器驱动程序</zh_cn><zh_tw>瀏覽器驅動程序</zh_tw>
- * @param from {string} <en_us>translation source text</en_us><zh_cn>翻译源文本</zh_cn><zh_tw>翻譯源文本</zh_tw>
- * @param langFrom {string} <en_us>The original language during translation</en_us><zh_cn>翻译时原始语言</zh_cn><zh_tw>翻譯時原始語言</zh_tw>
- * @param langTo {string} <en_us>Target language</en_us><zh_cn>翻译时目标语言</zh_cn><zh_tw>翻譯時目標語言</zh_tw>
+ * @param {WebDriver} driver <en_us>Browser driver</en_us><zh_cn>浏览器驱动程序</zh_cn><zh_tw>瀏覽器驅動程序</zh_tw>
+ * @param {string} from <en_us>translation source text</en_us><zh_cn>翻译源文本</zh_cn><zh_tw>翻譯源文本</zh_tw>
+ * @param {string} langFrom <en_us>The original language during translation</en_us><zh_cn>翻译时原始语言</zh_cn><zh_tw>翻譯時原始語言</zh_tw>
+ * @param {string} langTo <en_us>Target language</en_us><zh_cn>翻译时目标语言</zh_cn><zh_tw>翻譯時目標語言</zh_tw>
  * @returns {Promise<string>} <en_us>asynchronous object: translation result text</en_us><zh_cn>异步对象：翻译结果文本</zh_cn><zh_tw>異步對象：翻譯結果文本</zh_tw>
  */
 export async function translateByGoogle(
@@ -167,67 +167,120 @@ export async function translateByGoogle(
 			TO_CSS,
 			WAIT_ELEMENT_VISIBLE_MILLISECONDS,
 		);
-	} else {
-		const RESULTS: string[] = [];
-		let remaining = from;
-		let remainingLength = FROM_LENGTH;
-		const END_TAG = `</${
-			langFrom === GOOGLE_TRANSLATE_LANG_EN ? 'en_us' : langFrom.replaceAll('-', '_').toLowerCase()
-		}>`;
-		const I18N_HTML_END_TAG_LENGTH = END_TAG.length;
+	}
 
-		do {
-			let next = '';
+	const RESULTS: string[] = [];
+	let remaining = from;
+	let remainingLength = FROM_LENGTH;
+	const END_TAG = `</${
+		langFrom === GOOGLE_TRANSLATE_LANG_EN ? 'en_us' : langFrom.replaceAll('-', '_').toLowerCase()
+	}>`;
+	const I18N_HTML_END_TAG_LENGTH = END_TAG.length;
 
-			if (remainingLength <= TRANSLATE_MAX_CHAR_COUNT_PER_TIME) {
-				next = remaining;
+	do {
+		let next = '';
+
+		if (remainingLength <= TRANSLATE_MAX_CHAR_COUNT_PER_TIME) {
+			// console.log({
+			// 	END_TAG,
+			// 	langFrom,
+			// 	langTo,
+			// 	remainingLength,
+			// 	TRANSLATE_MAX_CHAR_COUNT_PER_TIME,
+			// 	remainingLengthLessOrEqual: remainingLength <= TRANSLATE_MAX_CHAR_COUNT_PER_TIME,
+			// });
+			next = remaining;
+		} else {
+			const END_TAG_POS = remaining.substring(0, TRANSLATE_MAX_CHAR_COUNT_PER_TIME)
+				.lastIndexOf(END_TAG);
+			if (
+				END_TAG_POS > -1 &&
+				END_TAG_POS + I18N_HTML_END_TAG_LENGTH <= TRANSLATE_MAX_CHAR_COUNT_PER_TIME
+			) {
+				next = remaining.substring(0, END_TAG_POS + I18N_HTML_END_TAG_LENGTH);
 			} else {
-				const END_TAG_POS = remaining.substring(0, TRANSLATE_MAX_CHAR_COUNT_PER_TIME)
-					.lastIndexOf(END_TAG);
-				if (
-					END_TAG_POS > -1 &&
-					END_TAG_POS + I18N_HTML_END_TAG_LENGTH <= TRANSLATE_MAX_CHAR_COUNT_PER_TIME
-				) {
-					next = remaining.substring(0, END_TAG_POS + I18N_HTML_END_TAG_LENGTH);
-				} else {
-					let ok = false;
-					(langFrom === GOOGLE_TRANSLATE_LANG_EN ? '\n.?! ' : '\n。？！ ').split('').forEach(
-						(seg) => {
-							if (ok) return;
+				let ok = false;
+				(langFrom === GOOGLE_TRANSLATE_LANG_EN ? '\n.?! ' : '\n。？！ ').split('').forEach(
+					(seg) => {
+						if (ok) {
+							return;
+						}
 
-							const POS = remaining.indexOf(seg);
-							if (POS > 0) {
-								next = remaining.substring(0, POS);
-								ok = true;
-							}
-						},
-					);
+						const POS = remaining.substring(0, TRANSLATE_MAX_CHAR_COUNT_PER_TIME).lastIndexOf(
+							seg,
+						);
+						if (POS > 0) {
+							next = remaining.substring(0, POS);
+							ok = true;
+						}
+					},
+				);
 
-					if (!ok) {
-						next = remaining.substring(0, TRANSLATE_MAX_CHAR_COUNT_PER_TIME);
-					}
+				if (!ok) {
+					next = remaining.substring(0, TRANSLATE_MAX_CHAR_COUNT_PER_TIME);
 				}
 			}
+		}
 
-			await sendKeysAndReturn(elementFrom, next);
-			remaining = remaining.substring(next.length);
-			RESULTS.push(
-				await waitUtilElementLocatedByCssAndGetText(
-					driver,
-					TO_CSS,
-					WAIT_ELEMENT_VISIBLE_MILLISECONDS,
-				),
-			);
+		const nextLength = next.length;
+		remaining = remaining.substring(nextLength);
+		remainingLength = remaining.length;
+		// console.log({
+		// 	langFrom,
+		// 	langTo,
+		// 	nextLength,
+		// 	remainingLength,
+		// 	next,
+		// 	remaining,
+		// 	msg: 'before doubleClick',
+		// });
 
-			remainingLength = remaining.length;
-			if (remainingLength == 0) {
-				break;
-			}
+		// await doubleClick(driver, elementFrom);
+		// // console.log('after doubleClick');
+		// // driver.executeScript('arguments[0].blur();', elementFrom);
+		// // driver.executeScript('arguments[0].focus();', elementFrom);
+		// console.log('before sendKeysAndReturn');
+		// await sendKeysAndReturn(elementFrom, next);
+		// console.log('after sendKeysAndReturn');
 
-			await navigateTo(driver, URL);
-			elementFrom = await findElementByCss(driver, FROM_CSS);
-		} while (true);
+		await doubleClick(driver, elementFrom);
+		await sendKeysAndReturn(elementFrom, next);
 
-		return RESULTS.join(LF);
-	}
+		RESULTS.push(
+			await waitUtilElementLocatedByCssAndGetText(
+				driver,
+				TO_CSS,
+				WAIT_ELEMENT_VISIBLE_MILLISECONDS,
+			),
+		);
+
+		// try {
+		// 	await driver.wait(until.elementLocated(By.css(TO_CSS)), WAIT_ELEMENT_VISIBLE_MILLISECONDS);
+		// } catch (error) {
+		// 	console.error(error);
+		// }
+		// console.log(
+		// 	'after await driver.wait(until.elementLocated(By.css(TO_CSS)), WAIT_ELEMENT_VISIBLE_MILLISECONDS);',
+		// );
+		// try {
+		// 	const element = await driver.findElement(By.css(TO_CSS));
+		// 	console.log('after const element = await driver.findElement(By.css(TO_CSS));');
+		// 	RESULTS.push(await element.getText());
+		// 	console.log('after RESULTS.push(await element.getText());');
+		// } catch (error) {
+		// 	console.error(error);
+		// }
+
+		if (remainingLength === 0) {
+			break;
+		}
+
+		await navigateTo(driver, URL);
+		elementFrom = await findElementByCss(driver, FROM_CSS);
+		// } while (true);
+	} while (remainingLength);
+
+	// console.log(RESULTS.length);
+	// console.log(RESULTS[RESULTS.length - 1]);
+	return RESULTS.join(LF);
 }

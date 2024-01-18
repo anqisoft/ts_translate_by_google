@@ -34,10 +34,10 @@ export declare const GOOGLE_TRANSLATE_LANG_TW = "zh-TW";
  * <zh_cn>通过谷歌翻译文本</zh_cn>
  * <zh_tw>通過谷歌翻譯文本</zh_tw>
  *
- * @param driver {WebDriver} <en_us>Browser driver</en_us><zh_cn>浏览器驱动程序</zh_cn><zh_tw>瀏覽器驅動程序</zh_tw>
- * @param from {string} <en_us>translation source text</en_us><zh_cn>翻译源文本</zh_cn><zh_tw>翻譯源文本</zh_tw>
- * @param langFrom {string} <en_us>The original language during translation</en_us><zh_cn>翻译时原始语言</zh_cn><zh_tw>翻譯時原始語言</zh_tw>
- * @param langTo {string} <en_us>Target language</en_us><zh_cn>翻译时目标语言</zh_cn><zh_tw>翻譯時目標語言</zh_tw>
+ * @param {WebDriver} driver <en_us>Browser driver</en_us><zh_cn>浏览器驱动程序</zh_cn><zh_tw>瀏覽器驅動程序</zh_tw>
+ * @param {string} from <en_us>translation source text</en_us><zh_cn>翻译源文本</zh_cn><zh_tw>翻譯源文本</zh_tw>
+ * @param {string} langFrom <en_us>The original language during translation</en_us><zh_cn>翻译时原始语言</zh_cn><zh_tw>翻譯時原始語言</zh_tw>
+ * @param {string} langTo <en_us>Target language</en_us><zh_cn>翻译时目标语言</zh_cn><zh_tw>翻譯時目標語言</zh_tw>
  * @returns {Promise<string>} <en_us>asynchronous object: translation result text</en_us><zh_cn>异步对象：翻译结果文本</zh_cn><zh_tw>異步對象：翻譯結果文本</zh_tw>
  */
 export declare function translateByGoogle(driver: WebDriver, from: string, langFrom: string, langTo: string): Promise<string>;

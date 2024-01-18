@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: index.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: index.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*
+ * Copyright (c) 2024 anqisoft@gmail.com
+ * index.ts
+ *
+ * &lt;en_us>
+ * Creation: January 17, 2024 17:26:36
+ * Function: Provide Google translation -related methods.
+ * &lt;/en_us>
+ *
+ * &lt;zh_cn>
+ * 创建：2024年1月17日 17:26:36
+ * 功能：提供谷歌翻译相关方法。
+ * &lt;/zh_cn>
+ *
+ * &lt;zh_tw>
+ * 創建：2024年1月17日 17:26:36
+ * 功能：提供谷歌翻譯相關方法。
+ * &lt;/zh_tw>
+ */
+import { 
+// assert,
+// COMMAND_LINE_ARGS,
+// copyFileSync,
+// existsSync,
+// FILE_CREATE_NEW_AND_MODE_ALL,
+// FILE_MODE_ALL,
+// getFilenameTimestampPostfix,
+// HTML_TAG_BEGIN__EN_US,
+// HTML_TAG_BEGIN__ZH_CN,
+// HTML_TAG_BEGIN__ZH_TW,
+// // exitProcess,
+// // I18nable,
+// // I18nFlag,
+// // I18N_LANG_ARRAY,
+// // type I18N_LANG_KIND,
+// HTML_TAG_END__EN_US,
+// HTML_TAG_END__ZH_CN,
+// HTML_TAG_END__ZH_TW,
+// I18N_HTML_BEGIN_TAG_LENGTH,
+// joinPath,
+LF, } from 'https://raw.githubusercontent.com/anqisoft/ts_utils/main/index.ts';
+import { doubleClick, findElementByCss, navigateTo, sendKeysAndReturn, waitUtilElementLocatedByCssAndGetText, } from 'https://raw.githubusercontent.com/anqisoft/ts_selenium/main/index.ts';
+/**
+ * &lt;en_us>The longest number of characters in the text during translation&lt;/en_us>
+ * &lt;zh_cn>翻译时文本最长字符数&lt;/zh_cn>
+ * &lt;zh_tw>翻譯時文本最長字符數&lt;/zh_tw>
+ */
+export const TRANSLATE_MAX_CHAR_COUNT_PER_TIME = 5000;
+/**
+ * &lt;en_us>The longest millisecond number appears during the translation of the result&lt;/en_us>
+ * &lt;zh_cn>翻译时等待结果对象出现最长毫秒数&lt;/zh_cn>
+ * &lt;zh_tw>翻譯時等待結果對像出現最長毫秒數&lt;/zh_tw>
+ */
+export const WAIT_ELEMENT_VISIBLE_MILLISECONDS = 4000;
+/**
+ * &lt;en_us>Google Translation URL English mark&lt;/en_us>
+ * &lt;zh_cn>谷歌翻译网址英语标记&lt;/zh_cn>
+ * &lt;zh_tw>谷歌翻譯網址英語標記&lt;/zh_tw>
+ */
+export const GOOGLE_TRANSLATE_LANG_EN = 'en';
+/**
+ * &lt;en_us>Google Translation URL Simplified Chinese Label&lt;/en_us>
+ * &lt;zh_cn>谷歌翻译网址简体中文标记&lt;/zh_cn>
+ * &lt;zh_tw>谷歌翻譯網址簡體中文標記&lt;/zh_tw>
+ */
+export const GOOGLE_TRANSLATE_LANG_CN = 'zh-CN';
+/**
+ * &lt;en_us>Google Translation URL Traditional Chinese Label&lt;/en_us>
+ * &lt;zh_cn>谷歌翻译网址繁体中文标记&lt;/zh_cn>
+ * &lt;zh_tw>谷歌翻譯網址繁體中文標記&lt;/zh_tw>
+ */
+export const GOOGLE_TRANSLATE_LANG_TW = 'zh-TW';
+/**
+ * {string}
+ * &lt;en_us>Google Translation URL prefix&lt;/en_us>
+ * &lt;zh_cn>谷歌翻译网址前缀&lt;/zh_cn>
+ * &lt;zh_tw>谷歌翻譯網址前綴&lt;/zh_tw>
+ */
+const URL_PREFIX = 'https://translate.google.com/details?sl=';
+/**
+ * {string}
+ * &lt;en_us>The middle section of Google Translation URL&lt;/en_us>
+ * &lt;zh_cn>谷歌翻译网址中段&lt;/zh_cn>
+ * &lt;zh_tw>谷歌翻譯網址中段&lt;/zh_tw>
+ */
+const URL_MIDDELE = '&amp;tl=';
+/**
+ * {string}
+ * &lt;en_us>The style table of the corresponding element of the translation source is used to find this element and further send text and carrier symbols to the translation&lt;/en_us>
+ * &lt;zh_cn>翻译源对应元素的样式表，用于查找此元素并进一步向其中发送文本及回车符，以开始翻译&lt;/zh_cn>
+ * &lt;zh_tw>翻譯源對應元素的樣式表，用於查找此元素並進一步向其中發送文本及回車符，以開始翻譯&lt;/zh_tw>
+ */
+const FROM_CSS = '.er8xn';
+/**
+ * {string}
+ * &lt;en_us>translation result corresponds to the style table of the element, which is used to find this element and further obtain the translation result&lt;/en_us>
+ * &lt;zh_cn>翻译结果对应元素的样式表，用于查找此元素并进一步获取翻译结果&lt;/zh_cn>
+ * &lt;zh_tw>翻譯結果對應元素的樣式表，用於查找此元素並進一步獲取翻譯結果&lt;/zh_tw>
+ */
+const TO_CSS = '.lRu31';
+/**
+ * &lt;en_us>translation text through Google&lt;/en_us>
+ * &lt;zh_cn>通过谷歌翻译文本&lt;/zh_cn>
+ * &lt;zh_tw>通過谷歌翻譯文本&lt;/zh_tw>
+ *
+ * @param {WebDriver} driver &lt;en_us>Browser driver&lt;/en_us>&lt;zh_cn>浏览器驱动程序&lt;/zh_cn>&lt;zh_tw>瀏覽器驅動程序&lt;/zh_tw>
+ * @param {string} from &lt;en_us>translation source text&lt;/en_us>&lt;zh_cn>翻译源文本&lt;/zh_cn>&lt;zh_tw>翻譯源文本&lt;/zh_tw>
+ * @param {string} langFrom &lt;en_us>The original language during translation&lt;/en_us>&lt;zh_cn>翻译时原始语言&lt;/zh_cn>&lt;zh_tw>翻譯時原始語言&lt;/zh_tw>
+ * @param {string} langTo &lt;en_us>Target language&lt;/en_us>&lt;zh_cn>翻译时目标语言&lt;/zh_cn>&lt;zh_tw>翻譯時目標語言&lt;/zh_tw>
+ * @returns {Promise&lt;string>} &lt;en_us>asynchronous object: translation result text&lt;/en_us>&lt;zh_cn>异步对象：翻译结果文本&lt;/zh_cn>&lt;zh_tw>異步對象：翻譯結果文本&lt;/zh_tw>
+ */
+export async function translateByGoogle(driver, from, langFrom, langTo) {
+    const URL = `${URL_PREFIX}${langFrom}${URL_MIDDELE}${langTo}`;
+    await navigateTo(driver, URL);
+    let elementFrom = await findElementByCss(driver, FROM_CSS);
+    const FROM_LENGTH = from.length;
+    if (FROM_LENGTH &lt;= TRANSLATE_MAX_CHAR_COUNT_PER_TIME) {
+        await doubleClick(driver, elementFrom);
+        await sendKeysAndReturn(elementFrom, from);
+        return await waitUtilElementLocatedByCssAndGetText(driver, TO_CSS, WAIT_ELEMENT_VISIBLE_MILLISECONDS);
+    }
+    const RESULTS = [];
+    let remaining = from;
+    let remainingLength = FROM_LENGTH;
+    const END_TAG = `&lt;/${langFrom === GOOGLE_TRANSLATE_LANG_EN ? 'en_us' : langFrom.replaceAll('-', '_').toLowerCase()}>`;
+    const I18N_HTML_END_TAG_LENGTH = END_TAG.length;
+    do {
+        let next = '';
+        if (remainingLength &lt;= TRANSLATE_MAX_CHAR_COUNT_PER_TIME) {
+            // console.log({
+            // 	END_TAG,
+            // 	langFrom,
+            // 	langTo,
+            // 	remainingLength,
+            // 	TRANSLATE_MAX_CHAR_COUNT_PER_TIME,
+            // 	remainingLengthLessOrEqual: remainingLength &lt;= TRANSLATE_MAX_CHAR_COUNT_PER_TIME,
+            // });
+            next = remaining;
+        }
+        else {
+            const END_TAG_POS = remaining.substring(0, TRANSLATE_MAX_CHAR_COUNT_PER_TIME)
+                .lastIndexOf(END_TAG);
+            if (END_TAG_POS > -1 &amp;&amp;
+                END_TAG_POS + I18N_HTML_END_TAG_LENGTH &lt;= TRANSLATE_MAX_CHAR_COUNT_PER_TIME) {
+                next = remaining.substring(0, END_TAG_POS + I18N_HTML_END_TAG_LENGTH);
+            }
+            else {
+                let ok = false;
+                (langFrom === GOOGLE_TRANSLATE_LANG_EN ? '\n.?! ' : '\n。？！ ').split('').forEach((seg) => {
+                    if (ok) {
+                        return;
+                    }
+                    const POS = remaining.substring(0, TRANSLATE_MAX_CHAR_COUNT_PER_TIME).lastIndexOf(seg);
+                    if (POS > 0) {
+                        next = remaining.substring(0, POS);
+                        ok = true;
+                    }
+                });
+                if (!ok) {
+                    next = remaining.substring(0, TRANSLATE_MAX_CHAR_COUNT_PER_TIME);
+                }
+            }
+        }
+        const nextLength = next.length;
+        remaining = remaining.substring(nextLength);
+        remainingLength = remaining.length;
+        // console.log({
+        // 	langFrom,
+        // 	langTo,
+        // 	nextLength,
+        // 	remainingLength,
+        // 	next,
+        // 	remaining,
+        // 	msg: 'before doubleClick',
+        // });
+        // await doubleClick(driver, elementFrom);
+        // // console.log('after doubleClick');
+        // // driver.executeScript('arguments[0].blur();', elementFrom);
+        // // driver.executeScript('arguments[0].focus();', elementFrom);
+        // console.log('before sendKeysAndReturn');
+        // await sendKeysAndReturn(elementFrom, next);
+        // console.log('after sendKeysAndReturn');
+        await doubleClick(driver, elementFrom);
+        await sendKeysAndReturn(elementFrom, next);
+        RESULTS.push(await waitUtilElementLocatedByCssAndGetText(driver, TO_CSS, WAIT_ELEMENT_VISIBLE_MILLISECONDS));
+        // try {
+        // 	await driver.wait(until.elementLocated(By.css(TO_CSS)), WAIT_ELEMENT_VISIBLE_MILLISECONDS);
+        // } catch (error) {
+        // 	console.error(error);
+        // }
+        // console.log(
+        // 	'after await driver.wait(until.elementLocated(By.css(TO_CSS)), WAIT_ELEMENT_VISIBLE_MILLISECONDS);',
+        // );
+        // try {
+        // 	const element = await driver.findElement(By.css(TO_CSS));
+        // 	console.log('after const element = await driver.findElement(By.css(TO_CSS));');
+        // 	RESULTS.push(await element.getText());
+        // 	console.log('after RESULTS.push(await element.getText());');
+        // } catch (error) {
+        // 	console.error(error);
+        // }
+        if (remainingLength === 0) {
+            break;
+        }
+        await navigateTo(driver, URL);
+        elementFrom = await findElementByCss(driver, FROM_CSS);
+        // } while (true);
+    } while (remainingLength);
+    // console.log(RESULTS.length);
+    // console.log(RESULTS[RESULTS.length - 1]);
+    return RESULTS.join(LF);
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#FROM_CSS">FROM_CSS</a></li><li><a href="global.html#GOOGLE_TRANSLATE_LANG_CN">GOOGLE_TRANSLATE_LANG_CN</a></li><li><a href="global.html#GOOGLE_TRANSLATE_LANG_EN">GOOGLE_TRANSLATE_LANG_EN</a></li><li><a href="global.html#GOOGLE_TRANSLATE_LANG_TW">GOOGLE_TRANSLATE_LANG_TW</a></li><li><a href="global.html#TO_CSS">TO_CSS</a></li><li><a href="global.html#TRANSLATE_MAX_CHAR_COUNT_PER_TIME">TRANSLATE_MAX_CHAR_COUNT_PER_TIME</a></li><li><a href="global.html#URL_MIDDELE">URL_MIDDELE</a></li><li><a href="global.html#URL_PREFIX">URL_PREFIX</a></li><li><a href="global.html#WAIT_ELEMENT_VISIBLE_MILLISECONDS">WAIT_ELEMENT_VISIBLE_MILLISECONDS</a></li><li><a href="global.html#translateByGoogle">translateByGoogle</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Jan 18 2024 16:03:44 GMT+0800 (China Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
